@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_mlkit_translation/google_mlkit_translation.dart';
 
 void main() {
   runApp(const MyApp());
@@ -32,6 +33,37 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   
+  late OnDeviceTranslator onDeviceTranslator;
+  final modelManager = OnDeviceTranslatorModelManager();
+  bool isTranslatorReady = false;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    isModelDownloaded();
+
+    onDeviceTranslator = OnDeviceTranslator(sourceLanguage: TranslateLanguage.english, targetLanguage: TranslateLanguage.turkish);
+  }
+
+  isModelDownloaded() async {
+    bool isSourceDownloaded = await modelManager.isModelDownloaded(TranslateLanguage.english.bcpCode);
+    bool isTargetDownloaded = await modelManager.isModelDownloaded(TranslateLanguage.turkish.bcpCode);
+    if(isTargetDownloaded && isSourceDownloaded){
+      isTranslatorReady = true;
+    }
+    else{
+      if(isSourceDownloaded == false){
+        isSourceDownloaded = await modelManager.downloadModel(TranslateLanguage.english.bcpCode);
+      }
+      if(isTargetDownloaded == false){
+        isTargetDownloaded = await modelManager.downloadModel(TranslateLanguage.turkish.bcpCode);
+      }
+      if(isTargetDownloaded && isSourceDownloaded){
+        isTranslatorReady = true;
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +73,7 @@ class _MyHomePageState extends State<MyHomePage> {
         
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
        
-        title: Text(widget.title),
+        title: Text("Translator"), centerTitle: true,
       ),
       body: Center(
         
