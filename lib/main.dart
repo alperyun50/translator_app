@@ -14,7 +14,6 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Translate App',
       theme: ThemeData(
-        
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
       home: const MyHomePage(title: 'Translator'),
@@ -32,10 +31,14 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  
+
   late OnDeviceTranslator onDeviceTranslator;
   final modelManager = OnDeviceTranslatorModelManager();
   bool isTranslatorReady = false;
+  TextEditingController inputCon = TextEditingController();
+  var resultText = "translated text";
+  TranslateLanguage sourceLang = TranslateLanguage.turkish;
+  TranslateLanguage targetLang = TranslateLanguage.english;
 
   @override
   void initState() {
@@ -43,48 +46,99 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
     isModelDownloaded();
 
-    onDeviceTranslator = OnDeviceTranslator(sourceLanguage: TranslateLanguage.english, targetLanguage: TranslateLanguage.turkish);
+    onDeviceTranslator = OnDeviceTranslator(
+      sourceLanguage: sourceLang,
+      targetLanguage: targetLang,
+    );
   }
 
   isModelDownloaded() async {
-    bool isSourceDownloaded = await modelManager.isModelDownloaded(TranslateLanguage.english.bcpCode);
-    bool isTargetDownloaded = await modelManager.isModelDownloaded(TranslateLanguage.turkish.bcpCode);
-    if(isTargetDownloaded && isSourceDownloaded){
+    bool isSourceDownloaded = await modelManager.isModelDownloaded(
+      targetLang.bcpCode,
+    );
+    bool isTargetDownloaded = await modelManager.isModelDownloaded(
+      sourceLang.bcpCode,
+    );
+    if (isTargetDownloaded && isSourceDownloaded) {
       isTranslatorReady = true;
-    }
-    else{
-      if(isSourceDownloaded == false){
-        isSourceDownloaded = await modelManager.downloadModel(TranslateLanguage.english.bcpCode);
+    } else {
+      if (isSourceDownloaded == false) {
+        isSourceDownloaded = await modelManager.downloadModel(
+          targetLang.bcpCode,
+        );
       }
-      if(isTargetDownloaded == false){
-        isTargetDownloaded = await modelManager.downloadModel(TranslateLanguage.turkish.bcpCode);
+      if (isTargetDownloaded == false) {
+        isTargetDownloaded = await modelManager.downloadModel(
+          sourceLang.bcpCode,
+        );
       }
-      if(isTargetDownloaded && isSourceDownloaded){
+      if (isTargetDownloaded && isSourceDownloaded) {
         isTranslatorReady = true;
       }
     }
   }
 
+  performTranslation() async {
+    if (isTranslatorReady) {
+      resultText = await onDeviceTranslator.translateText(inputCon.text);
+      setState(() {
+        resultText;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    
     return Scaffold(
+      backgroundColor: Colors.grey.shade300,
       appBar: AppBar(
-        
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-       
-        title: Text("Translator"), centerTitle: true,
+        backgroundColor: Colors.black,
+
+        title: Text("Translator", style: TextStyle(color: Colors.white)),
+        centerTitle: true,
       ),
       body: Center(
-        
-        child: Column(
-          
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: <Widget>[
-            TextField(decoration: InputDecoration(hintText: "enter your text"),),
-            ElevatedButton(onPressed: (){}, child: Text("translate")),
-            Text("Translated text.."),
-          ],
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: <Widget>[
+              Expanded(
+                child: Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: TextField(
+                      style: TextStyle(fontSize: 25),
+                      decoration: InputDecoration(
+                        hintText: "enter your text",
+                        border: InputBorder.none,
+                        hintStyle: TextStyle(fontSize: 25),
+                      ),
+                      controller: inputCon,
+                      onChanged: (text) {
+                        performTranslation();
+                      },
+                    ),
+                  ),
+                ),
+              ),
+              // ElevatedButton(
+              //   onPressed: () {
+              //     performTranslation();
+              //   },
+              //   child: Text("translate"),
+              // ),
+              Expanded(
+                child: Card(
+                  child: Container(
+                    padding: EdgeInsets.all(8),
+                    width: MediaQuery.of(context).size.width,
+                    child: Text(resultText, style: TextStyle(fontSize: 25),),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
