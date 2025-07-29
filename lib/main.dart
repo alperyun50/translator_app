@@ -1,3 +1,5 @@
+// ignore_for_file: sized_box_for_whitespace
+
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_translation/google_mlkit_translation.dart';
 
@@ -31,7 +33,6 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-
   late OnDeviceTranslator onDeviceTranslator;
   final modelManager = OnDeviceTranslatorModelManager();
   bool isTranslatorReady = false;
@@ -133,8 +134,23 @@ class _MyHomePageState extends State<MyHomePage> {
                   child: Container(
                     padding: EdgeInsets.all(8),
                     width: MediaQuery.of(context).size.width,
-                    child: Text(resultText, style: TextStyle(fontSize: 25),),
+                    child: Text(resultText, style: TextStyle(fontSize: 25)),
                   ),
+                ),
+              ),
+              Card(
+                child: InkWell(
+                  onTap: (){
+                    
+                  },
+                  child: Container(
+                    width: 80,
+                    height: 80,
+                    child: Icon(Icons.mic, size: 40),
+                  ),
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(50),
                 ),
               ),
             ],
